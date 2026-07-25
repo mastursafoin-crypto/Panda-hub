@@ -1,0 +1,125 @@
+-- إنشاء الواجهة الأساسية (Panda Hub)
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local TopBar = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local CloseBtn = Instance.new("TextButton")
+local MinimizeBtn = Instance.new("TextButton")
+local TextButton = Instance.new("TextButton")
+local UICornerBtn = Instance.new("UICorner")
+
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "PandaHub"
+
+-- النافذة الرئيسية
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
+MainFrame.Size = UDim2.new(0, 220, 0, 130)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- شريط العنوان العلوي
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(140, 15, 15)
+TopBar.Size = UDim2.new(1, 0, 0, 35)
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 12)
+TopCorner.Parent = TopBar
+
+-- اسم السكربت
+Title.Parent = TopBar
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "Panda Hub 🐼"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 16
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- زر الإغلاق (X)
+CloseBtn.Parent = TopBar
+CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+CloseBtn.Position = UDim2.new(0.82, 0, 0.15, 0)
+CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+CloseBtn.Font = Enum.Font.SourceSansBold
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 14
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseBtn
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- زر التصغير (-)
+MinimizeBtn.Parent = TopBar
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 50)
+MinimizeBtn.Position = UDim2.new(0.64, 0, 0.15, 0)
+MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+MinimizeBtn.Font = Enum.Font.SourceSansBold
+MinimizeBtn.Text = "-"
+MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeBtn.TextSize = 14
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 6)
+MinCorner.Parent = MinimizeBtn
+
+local minimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    for _, child in ipairs(MainFrame:GetChildren()) do
+        if child ~= TopBar and child ~= UICorner then
+            child.Visible = not minimized
+        end
+    end
+    MainFrame.Size = minimized and UDim2.new(0, 220, 0, 35) or UDim2.new(0, 220, 0, 130)
+end)
+
+-- زر التكبير داخل القائمة
+TextButton.Parent = MainFrame
+TextButton.BackgroundColor3 = Color3.fromRGB(210, 40, 40)
+TextButton.Position = UDim2.new(0.1, 0, 0.45, 0)
+TextButton.Size = UDim2.new(0.8, 0, 0, 45)
+TextButton.Font = Enum.Font.SourceSansBold
+TextButton.Text = "تكبير السكن (طول وعرض)"
+TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextButton.TextSize = 14
+
+UICornerBtn.CornerRadius = UDim.new(0, 8)
+UICornerBtn.Parent = TextButton
+
+-- دالة التكبير المباشر للأجزاء (تضمن الطول والعرض معاً)
+local function makeCharacterBig(char)
+    local rootPart = char:WaitForChild("HumanoidRootPart", 5)
+    if not rootPart then return end
+
+    pcall(function()
+        for _, part in ipairs(char:GetChildren()) do
+            if part:IsA("BasePart") then
+                -- نكبر الأجزاء بنسبة متوازنة للطول والعرض
+                part.Size = part.Size * 1.5
+            end
+        end
+    end)
+end
+
+TextButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    if player.Character then
+        makeCharacterBig(player.Character)
+    end
+end)
+
+-- الحفاظ على الحجم حتى بعد الموت
+game.Players.LocalPlayer.CharacterAdded:Connect(function(newChar)
+    task.wait(1.5)
+    makeCharacterBig(newChar)
+end)
