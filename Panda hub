@@ -1,4 +1,4 @@
--- Panda Hub - Fixed Character Reset & Forced Discord Script
+-- Panda Hub - Fixed Size Reset Script
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
@@ -9,7 +9,7 @@ local DiscordLink = "https://discord.gg/" .. DiscordInvite
 if CoreGui:FindFirstChild("PandaHub") then CoreGui.PandaHub:Destroy() end
 if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
 
--- 1. شاشة القفل والاستشعار
+-- 1. شاشة القفل والاستشعار التلقائي للديسكورد
 local LockGui = Instance.new("ScreenGui", CoreGui)
 LockGui.Name = "PandaLock"
 
@@ -61,7 +61,7 @@ pcall(function()
     setclipboard(DiscordLink)
 end)
 
--- 2. السكربت الرئيسي
+-- 2. السكربت الرئيسي بعد التحقق
 local function LoadMainScript()
     if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
 
@@ -133,7 +133,7 @@ local function LoadMainScript()
     MinimizeBtn.Font = Enum.Font.SourceSansBold
     MinimizeBtn.Text = "-"
     MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MinimizeBtn.TextSize = 14
+    MinimizeBtn.TextSize.TextSize = 14
     local MinCorner = Instance.new("UICorner")
     MinCorner.CornerRadius = UDim.new(0, 6)
     MinCorner.Parent = MinimizeBtn
@@ -162,7 +162,7 @@ local function LoadMainScript()
     UICornerBtn.CornerRadius = UDim.new(0, 8)
     UICornerBtn.Parent = TextButton
 
-    -- زر إرجاع الجسم طبيعي (المعدل والمضمون)
+    -- زر إرجاع الجسم طبيعي
     ResetBtn.Parent = MainFrame
     ResetBtn.BackgroundColor3 = Color3.fromRGB(190, 80, 20)
     ResetBtn.Position = UDim2.new(0.1, 0, 0.42, 0)
@@ -195,41 +195,50 @@ local function LoadMainScript()
         DiscordBtn.Text = "رابط ديسكورد السيرفر"
     end)
 
-    -- دالة التكبير
-    TextButton.MouseButton1Click:Connect(function()
-        local char = LP.Character
-        if char then
-            pcall(function()
-                for _, part in ipairs(char:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.Size = part.Size * 1.5
-                    end
-                end
-            end)
-        end
-    end)
+    local isBig = false
 
-    -- دالة إرجاع الجسم طبيعي 100% (تعيد تحميل السكن الأصلي فوراً)
-    ResetBtn.MouseButton1Click:Connect(function()
+    -- دالة لتكبير أو إعادة تعيين المقاييس الحقيقية عبر الـ HumanoidScale (طريقة نظيفة ولا تلخبط اللعبة)
+    local function setCharacterScale(makeBig)
+        local char = LP.Character
+        if not char then return end
         pcall(function()
-            local char = LP.Character
-            if char then
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    -- إعادة تعيين المقاييس إن وجدت
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                if makeBig then
+                    humanoid.BodyDepthScale = 1.8
+                    humanoid.BodyHeightScale = 1.8
+                    humanoid.BodyWidthScale = 1.8
+                    humanoid.HeadScale = 1.8
+                else
                     humanoid.BodyDepthScale = 1
                     humanoid.BodyHeightScale = 1
                     humanoid.BodyWidthScale = 1
                     humanoid.HeadScale = 1
                 end
-                -- الطريقة الأضمن: إجبار اللعبة على إعادة سحب وريست لشكل الشخصية الأصلي
-                LP:LoadCharacter()
             end
         end)
+    end
+
+    TextButton.MouseButton1Click:Connect(function()
+        isBig = true
+        setCharacterScale(true)
+    end)
+
+    ResetBtn.MouseButton1Click:Connect(function()
+        isBig = false
+        setCharacterScale(false)
+    end)
+
+    -- الحفاظ على الحجم الكبير بعد الموت
+    LP.CharacterAdded:Connect(function(newChar)
+        task.wait(1.5)
+        if isBig then
+            setCharacterScale(true)
+        end
     end)
 end
 
--- 3. الاستشعار التلقائي
+-- 3. الاستشعار التلقائي للديسكورد
 local hasJoined = false
 
 JoinBtn.MouseButton1Click:Connect(function()
@@ -250,3 +259,4 @@ task.spawn(function()
         end
     end
 end)
+
