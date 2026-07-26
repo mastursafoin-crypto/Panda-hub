@@ -1,4 +1,4 @@
--- Panda Hub - Final Fixed Layout Script
+-- Panda Hub - Ultimate Working Reset Script
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
@@ -150,7 +150,7 @@ local function LoadMainScript()
         MainFrame.Size = minimized and UDim2.new(0, 220, 0, 35) or UDim2.new(0, 220, 0, 200)
     end)
 
-    -- زر تكبير السكن (ترتيب مضبوط بالأسفل)
+    -- زر تكبير السكن
     TextButton.Parent = MainFrame
     TextButton.BackgroundColor3 = Color3.fromRGB(210, 40, 40)
     TextButton.Position = UDim2.new(0.1, 0, 0.25, 0)
@@ -163,7 +163,7 @@ local function LoadMainScript()
     UICornerBtn.CornerRadius = UDim.new(0, 8)
     UICornerBtn.Parent = TextButton
 
-    -- زر إرجاع الجسم طبيعي
+    -- زر إرجاع الجسم طبيعي (الطريقة الآمنة المضمونة عبر تصفير الهيلث أو الموت البرمجي)
     ResetBtn.Parent = MainFrame
     ResetBtn.BackgroundColor3 = Color3.fromRGB(190, 80, 20)
     ResetBtn.Position = UDim2.new(0.1, 0, 0.48, 0)
@@ -196,7 +196,7 @@ local function LoadMainScript()
         DiscordBtn.Text = "رابط ديسكورد السيرفر"
     end)
 
-    -- دالة التكبير المباشر وإعادة تعيين الشكل (تضمن عمل الزرين تماماً بدون مشاكل)
+    -- دالة التكبير
     TextButton.MouseButton1Click:Connect(function()
         local char = LP.Character
         if char then
@@ -210,9 +210,16 @@ local function LoadMainScript()
         end
     end)
 
+    -- دالة إرجاع الجسم طبيعي (تقوم بعمل إعادة إنتاج حقيقي للشخصية بإلغاء التكبير)
     ResetBtn.MouseButton1Click:Connect(function()
         pcall(function()
-            LP:LoadCharacter()
+            local char = LP.Character
+            if char then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.Health = 0 -- تجبر اللعبة على إعادة إحياء اللاعب بالشكل الطبيعي 100%
+                end
+            end
         end)
     end)
 end
@@ -238,4 +245,3 @@ task.spawn(function()
         end
     end
 end)
-
