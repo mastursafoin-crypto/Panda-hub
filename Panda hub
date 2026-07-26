@@ -1,13 +1,12 @@
--- Panda Hub - Forced Discord Auto-Check Script
+-- Panda Hub - Forced Discord Auto-Check & Reset Size Script
 local CoreGui = game:GetService("CoreGui")
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
-local DiscordInvite = "wb58RgSp" -- كود السيرفر حقكم
+local DiscordInvite = "wb58RgSp"
 local DiscordLink = "https://discord.gg/" .. DiscordInvite
 
--- تنظيف الواجهات القديمة
 if CoreGui:FindFirstChild("PandaHub") then CoreGui.PandaHub:Destroy() end
 if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
 
@@ -59,12 +58,11 @@ JoinBtn.TextSize = 14
 local JoinCorner = Instance.new("UICorner", JoinBtn)
 JoinCorner.CornerRadius = UDim.new(0, 8)
 
--- نسخ الرابط تلقائياً محاولة لفتح الديسكورد
 pcall(function()
     setclipboard(DiscordLink)
 end)
 
--- 2. دالة تشغيل السكربت الرئيسي الأصلي (Panda Hub) بعد الاستشعار
+-- 2. دالة تشغيل السكربت الرئيسي مع زر الإرجاع الجديد
 local function LoadMainScript()
     if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
 
@@ -75,18 +73,25 @@ local function LoadMainScript()
     local Title = Instance.new("TextLabel")
     local CloseBtn = Instance.new("TextButton")
     local MinimizeBtn = Instance.new("TextButton")
+    
+    -- الأزرار داخل القائمة
     local TextButton = Instance.new("TextButton")
     local UICornerBtn = Instance.new("UICorner")
+    
+    local ResetBtn = Instance.new("TextButton")
+    local UICornerReset = Instance.new("UICorner")
+    
     local DiscordBtn = Instance.new("TextButton")
     local UICornerDiscord = Instance.new("UICorner")
 
     ScreenGui.Parent = CoreGui
     ScreenGui.Name = "PandaHub"
 
+    -- زيادة طول القائمة لتكفي الأزرار الثلاثة براحة
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
     MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-    MainFrame.Size = UDim2.new(0, 220, 0, 185)
+    MainFrame.Size = UDim2.new(0, 220, 0, 230)
     MainFrame.Active = true
     MainFrame.Draggable = true
 
@@ -144,13 +149,14 @@ local function LoadMainScript()
                 child.Visible = not minimized
             end
         end
-        MainFrame.Size = minimized and UDim2.new(0, 220, 0, 35) or UDim2.new(0, 220, 0, 185)
+        MainFrame.Size = minimized and UDim2.new(0, 220, 0, 35) or UDim2.new(0, 220, 0, 230)
     end)
 
+    -- زر تكبير السكن
     TextButton.Parent = MainFrame
     TextButton.BackgroundColor3 = Color3.fromRGB(210, 40, 40)
-    TextButton.Position = UDim2.new(0.1, 0, 0.28, 0)
-    TextButton.Size = UDim2.new(0.8, 0, 0, 40)
+    TextButton.Position = UDim2.new(0.1, 0, 0.22, 0)
+    TextButton.Size = UDim2.new(0.8, 0, 0, 38)
     TextButton.Font = Enum.Font.SourceSansBold
     TextButton.Text = "تكبير السكن (طول وعرض)"
     TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -159,10 +165,24 @@ local function LoadMainScript()
     UICornerBtn.CornerRadius = UDim.new(0, 8)
     UICornerBtn.Parent = TextButton
 
+    -- زر إرجاع الجسم كما كان (الجديد)
+    ResetBtn.Parent = MainFrame
+    ResetBtn.BackgroundColor3 = Color3.fromRGB(190, 80, 20)
+    ResetBtn.Position = UDim2.new(0.1, 0, 0.42, 0)
+    ResetBtn.Size = UDim2.new(0.8, 0, 0, 38)
+    ResetBtn.Font = Enum.Font.SourceSansBold
+    ResetBtn.Text = "إرجاع الجسم طبيعي"
+    ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ResetBtn.TextSize = 14
+
+    UICornerReset.CornerRadius = UDim.new(0, 8)
+    UICornerReset.Parent = ResetBtn
+
+    -- زر ديسكورد السيرفر
     DiscordBtn.Parent = MainFrame
     DiscordBtn.BackgroundColor3 = Color3.fromRGB(120, 20, 120)
-    DiscordBtn.Position = UDim2.new(0.1, 0, 0.58, 0)
-    DiscordBtn.Size = UDim2.new(0.8, 0, 0, 40)
+    DiscordBtn.Position = UDim2.new(0.1, 0, 0.62, 0)
+    DiscordBtn.Size = UDim2.new(0.8, 0, 0, 38)
     DiscordBtn.Font = Enum.Font.SourceSansBold
     DiscordBtn.Text = "رابط ديسكورد السيرفر"
     DiscordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -178,60 +198,66 @@ local function LoadMainScript()
         DiscordBtn.Text = "رابط ديسكورد السيرفر"
     end)
 
-    local function makeCharacterBig(char)
+    -- دوال تعديل الحجم وإرجاعه
+    local function makeCharacterSize(multiplier)
+        local char = LP.Character
+        if not char then return end
         local rootPart = char:WaitForChild("HumanoidRootPart", 5)
         if not rootPart then return end
+
         pcall(function()
             for _, part in ipairs(char:GetChildren()) do
                 if part:IsA("BasePart") then
-                    part.Size = part.Size * 1.5
+                    -- إذا كان تكبير نضرب في 1.5، وإذا رجوع نقسم أو نرجع للحجم الافتراضي للأجزاء
+                    if multiplier > 1 then
+                        part.Size = part.Size * 1.5
+                    else
+                        -- إعادة تعيين أبعاد الشخصية عبر الـ Humanoid لو متوفر، أو إعادة تحميل الشخصية طبيعي
+                        local hum = char:FindFirstChildOfClass("Humanoid")
+                        if hum then
+                            hum.BodyDepthScale = 1
+                            hum.BodyHeightScale = 1
+                            hum.BodyWidthScale = 1
+                            hum.HeadScale = 1
+                        end
+                    end
                 end
             end
         end)
     end
 
     TextButton.MouseButton1Click:Connect(function()
-        if LP.Character then makeCharacterBig(LP.Character) end
+        makeCharacterSize(1.5)
     end)
 
-    LP.CharacterAdded:Connect(function(newChar)
-        task.wait(1.5)
-        makeCharacterBig(newChar)
+    ResetBtn.MouseButton1Click:Connect(function()
+        -- طريقة مضمونة لإرجاع السكن طبيعي بإعادة توفاة الشخصية أو تصفير الأبعاد
+        local char = LP.Character
+        if char then
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if hum then
+                pcall(function()
+                    hum.BodyDepthScale = 1
+                    hum.BodyHeightScale = 1
+                    hum.BodyWidthScale = 1
+                    hum.HeadScale = 1
+                end)
+            end
+        end
     end)
 end
 
--- 3. جهاز الاستشعار والفحص الدائم (Auto-Check Sensor)
+-- 3. نظام الاستشعار التلقائي للديسكورد
 local hasJoined = false
 
 JoinBtn.MouseButton1Click:Connect(function()
     pcall(function() setclipboard(DiscordLink) end)
     JoinBtn.Text = "تم نسخ الرابط! انضم وارجع للعبة..."
-    
-    -- حاول إرسال طلب انضمام تلقائي عبر المحاكي (Prompt Discord Invite)
-    pcall(function()
-        if request then
-            request({
-                Url = 'http://127.0.0.1:6463/rpc?v=1',
-                Method = 'POST',
-                Headers = {
-                    ['Content-Type'] = 'application/json',
-                    ['Origin'] = 'https://discord.com'
-                },
-                Body = HttpService:JSONEncode({
-                    cmd = 'INVITE_BROWSER',
-                    args = {code = DiscordInvite},
-                    nonce = HttpService:GenerateGUID(false)
-                })
-            })
-        end
-    end)
 end)
 
--- الحلقة التكرارية المسؤولة عن فتح السكربت تلقائياً بعد الفحص
 task.spawn(function()
     while not hasJoined do
         task.wait(1.5)
-        -- يقوم السكربت بفتح القائمة تلقائياً بمجرد إتمام التفاعل أو الانضمام
         if JoinBtn.Text:find("تم نسخ") then
             LockStatus.Text = "تم التحقق بنجاح! جاري فتح Panda Hub..."
             LockStatus.TextColor3 = Color3.fromRGB(100, 255, 100)
