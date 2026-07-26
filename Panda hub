@@ -1,6 +1,5 @@
--- Panda Hub - Forced Discord Auto-Check & Reset Size Script
+-- Panda Hub - Fixed Character Reset & Forced Discord Script
 local CoreGui = game:GetService("CoreGui")
-local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
@@ -10,7 +9,7 @@ local DiscordLink = "https://discord.gg/" .. DiscordInvite
 if CoreGui:FindFirstChild("PandaHub") then CoreGui.PandaHub:Destroy() end
 if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
 
--- 1. إنشاء شاشة القفل والاستشعار
+-- 1. شاشة القفل والاستشعار
 local LockGui = Instance.new("ScreenGui", CoreGui)
 LockGui.Name = "PandaLock"
 
@@ -62,7 +61,7 @@ pcall(function()
     setclipboard(DiscordLink)
 end)
 
--- 2. دالة تشغيل السكربت الرئيسي مع زر الإرجاع الجديد
+-- 2. السكربت الرئيسي
 local function LoadMainScript()
     if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
 
@@ -74,7 +73,6 @@ local function LoadMainScript()
     local CloseBtn = Instance.new("TextButton")
     local MinimizeBtn = Instance.new("TextButton")
     
-    -- الأزرار داخل القائمة
     local TextButton = Instance.new("TextButton")
     local UICornerBtn = Instance.new("UICorner")
     
@@ -87,7 +85,6 @@ local function LoadMainScript()
     ScreenGui.Parent = CoreGui
     ScreenGui.Name = "PandaHub"
 
-    -- زيادة طول القائمة لتكفي الأزرار الثلاثة براحة
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
     MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
@@ -165,7 +162,7 @@ local function LoadMainScript()
     UICornerBtn.CornerRadius = UDim.new(0, 8)
     UICornerBtn.Parent = TextButton
 
-    -- زر إرجاع الجسم كما كان (الجديد)
+    -- زر إرجاع الجسم طبيعي (المعدل والمضمون)
     ResetBtn.Parent = MainFrame
     ResetBtn.BackgroundColor3 = Color3.fromRGB(190, 80, 20)
     ResetBtn.Position = UDim2.new(0.1, 0, 0.42, 0)
@@ -198,56 +195,41 @@ local function LoadMainScript()
         DiscordBtn.Text = "رابط ديسكورد السيرفر"
     end)
 
-    -- دوال تعديل الحجم وإرجاعه
-    local function makeCharacterSize(multiplier)
-        local char = LP.Character
-        if not char then return end
-        local rootPart = char:WaitForChild("HumanoidRootPart", 5)
-        if not rootPart then return end
-
-        pcall(function()
-            for _, part in ipairs(char:GetChildren()) do
-                if part:IsA("BasePart") then
-                    -- إذا كان تكبير نضرب في 1.5، وإذا رجوع نقسم أو نرجع للحجم الافتراضي للأجزاء
-                    if multiplier > 1 then
-                        part.Size = part.Size * 1.5
-                    else
-                        -- إعادة تعيين أبعاد الشخصية عبر الـ Humanoid لو متوفر، أو إعادة تحميل الشخصية طبيعي
-                        local hum = char:FindFirstChildOfClass("Humanoid")
-                        if hum then
-                            hum.BodyDepthScale = 1
-                            hum.BodyHeightScale = 1
-                            hum.BodyWidthScale = 1
-                            hum.HeadScale = 1
-                        end
-                    end
-                end
-            end
-        end)
-    end
-
+    -- دالة التكبير
     TextButton.MouseButton1Click:Connect(function()
-        makeCharacterSize(1.5)
-    end)
-
-    ResetBtn.MouseButton1Click:Connect(function()
-        -- طريقة مضمونة لإرجاع السكن طبيعي بإعادة توفاة الشخصية أو تصفير الأبعاد
         local char = LP.Character
         if char then
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            if hum then
-                pcall(function()
-                    hum.BodyDepthScale = 1
-                    hum.BodyHeightScale = 1
-                    hum.BodyWidthScale = 1
-                    hum.HeadScale = 1
-                end)
-            end
+            pcall(function()
+                for _, part in ipairs(char:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.Size = part.Size * 1.5
+                    end
+                end
+            end)
         end
+    end)
+
+    -- دالة إرجاع الجسم طبيعي 100% (تعيد تحميل السكن الأصلي فوراً)
+    ResetBtn.MouseButton1Click:Connect(function()
+        pcall(function()
+            local char = LP.Character
+            if char then
+                local humanoid = char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    -- إعادة تعيين المقاييس إن وجدت
+                    humanoid.BodyDepthScale = 1
+                    humanoid.BodyHeightScale = 1
+                    humanoid.BodyWidthScale = 1
+                    humanoid.HeadScale = 1
+                end
+                -- الطريقة الأضمن: إجبار اللعبة على إعادة سحب وريست لشكل الشخصية الأصلي
+                LP:LoadCharacter()
+            end
+        end)
     end)
 end
 
--- 3. نظام الاستشعار التلقائي للديسكورد
+-- 3. الاستشعار التلقائي
 local hasJoined = false
 
 JoinBtn.MouseButton1Click:Connect(function()
@@ -268,4 +250,3 @@ task.spawn(function()
         end
     end
 end)
-
