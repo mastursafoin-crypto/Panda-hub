@@ -1,247 +1,68 @@
--- Panda Hub - Ultimate Working Reset Script
+-- Panda Hub - Maintenance Mode
 local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-local LP = Players.LocalPlayer
 
 local DiscordInvite = "wb58RgSp"
 local DiscordLink = "https://discord.gg/" .. DiscordInvite
 
+-- مسح أي واجهة سابقة للسكربت
 if CoreGui:FindFirstChild("PandaHub") then CoreGui.PandaHub:Destroy() end
 if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
+if CoreGui:FindFirstChild("PandaMaintenance") then CoreGui.PandaMaintenance:Destroy() end
 
--- 1. شاشة القفل والاستشعار التلقائي للديسكورد
-local LockGui = Instance.new("ScreenGui", CoreGui)
-LockGui.Name = "PandaLock"
+-- إنشاء شاشة الصيانة
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "PandaMaintenance"
 
-local LockFrame = Instance.new("Frame", LockGui)
-LockFrame.Size = UDim2.new(0, 260, 0, 150)
-LockFrame.Position = UDim2.new(0.5, -130, 0.5, -75)
-LockFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-LockFrame.Active = true
-LockFrame.Draggable = true
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 350, 0, 200)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -100)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-local LockCorner = Instance.new("UICorner", LockFrame)
-LockCorner.CornerRadius = UDim.new(0, 12)
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 12)
 
-local LockStroke = Instance.new("UIStroke", LockFrame)
-LockStroke.Thickness = 2
-LockStroke.Color = Color3.fromRGB(255, 30, 30)
+local UIStroke = Instance.new("UIStroke", MainFrame)
+UIStroke.Thickness = 2
+UIStroke.Color = Color3.fromRGB(255, 50, 50) -- إطار أحمر يدل على التوقف
 
-local LockTitle = Instance.new("TextLabel", LockFrame)
-LockTitle.Size = UDim2.new(1, 0, 0, 35)
-LockTitle.BackgroundTransparency = 1
-LockTitle.Text = "Panda Hub - System Lock 🔒"
-LockTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-LockTitle.Font = Enum.Font.SourceSansBold
-LockTitle.TextSize = 16
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundTransparency = 1
+Title.Text = "Panda Hub 🐼 - وضع الصيانة"
+Title.TextColor3 = Color3.fromRGB(255, 100, 100)
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
 
-local LockStatus = Instance.new("TextLabel", LockFrame)
-LockStatus.Size = UDim2.new(0.9, 0, 0, 50)
-LockStatus.Position = UDim2.new(0.05, 0, 0.25, 0)
-LockStatus.BackgroundTransparency = 1
-LockStatus.Text = "جاري التحقق من دخولك لسيرفر الديسكورد...\nيرجى الانضمام ليفتح السكربت تلقائياً!"
-LockStatus.TextColor3 = Color3.fromRGB(200, 200, 200)
-LockStatus.Font = Enum.Font.SourceSans
-LockStatus.TextSize = 13
-LockStatus.TextWrapped = true
+local Message = Instance.new("TextLabel", MainFrame)
+Message.Size = UDim2.new(0.9, 0, 0.5, 0)
+Message.Position = UDim2.new(0.05, 0, 0.2, 0)
+Message.BackgroundTransparency = 1
+-- رسالتك اللي طلبتها بالحرف
+Message.Text = "هناك صيانات من خبير سكربتات panda hub سيتم ألإنتهاء في أقرب وقت ولا تنسو تدخلون سيرفرنا ديسكورد"
+Message.TextColor3 = Color3.fromRGB(255, 255, 255)
+Message.Font = Enum.Font.SourceSans
+Message.TextSize = 18
+Message.TextWrapped = true
 
-local JoinBtn = Instance.new("TextButton", LockFrame)
-JoinBtn.Size = UDim2.new(0.85, 0, 0, 35)
-JoinBtn.Position = UDim2.new(0.075, 0, 0.68, 0)
-JoinBtn.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
-JoinBtn.Text = "نسخ رابط السيرفر وتحقق"
-JoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-JoinBtn.Font = Enum.Font.SourceSansBold
-JoinBtn.TextSize = 14
+local DiscordBtn = Instance.new("TextButton", MainFrame)
+DiscordBtn.Size = UDim2.new(0.8, 0, 0, 40)
+DiscordBtn.Position = UDim2.new(0.1, 0, 0.75, 0)
+DiscordBtn.BackgroundColor3 = Color3.fromRGB(114, 137, 218) -- لون الديسكورد
+DiscordBtn.Text = "نسخ رابط الديسكورد"
+DiscordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DiscordBtn.Font = Enum.Font.SourceSansBold
+DiscordBtn.TextSize = 16
 
-local JoinCorner = Instance.new("UICorner", JoinBtn)
-JoinCorner.CornerRadius = UDim.new(0, 8)
+local BtnCorner = Instance.new("UICorner", DiscordBtn)
+BtnCorner.CornerRadius = UDim.new(0, 8)
 
-pcall(function()
-    setclipboard(DiscordLink)
-end)
-
--- 2. السكربت الرئيسي بعد التحقق
-local function LoadMainScript()
-    if CoreGui:FindFirstChild("PandaLock") then CoreGui.PandaLock:Destroy() end
-
-    local ScreenGui = Instance.new("ScreenGui")
-    local MainFrame = Instance.new("Frame")
-    local UICorner = Instance.new("UICorner")
-    local TopBar = Instance.new("Frame")
-    local Title = Instance.new("TextLabel")
-    local CloseBtn = Instance.new("TextButton")
-    local MinimizeBtn = Instance.new("TextButton")
-    
-    local TextButton = Instance.new("TextButton")
-    local UICornerBtn = Instance.new("UICorner")
-    
-    local ResetBtn = Instance.new("TextButton")
-    local UICornerReset = Instance.new("UICorner")
-    
-    local DiscordBtn = Instance.new("TextButton")
-    local UICornerDiscord = Instance.new("UICorner")
-
-    ScreenGui.Parent = CoreGui
-    ScreenGui.Name = "PandaHub"
-
-    -- حجم النافذة الأساسية
-    MainFrame.Parent = ScreenGui
-    MainFrame.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
-    MainFrame.Position = UDim2.new(0.3, 0, 0.3, 0)
-    MainFrame.Size = UDim2.new(0, 220, 0, 200)
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-
-    UICorner.CornerRadius = UDim.new(0, 12)
-    UICorner.Parent = MainFrame
-
-    TopBar.Parent = MainFrame
-    TopBar.BackgroundColor3 = Color3.fromRGB(140, 15, 15)
-    TopBar.Size = UDim2.new(1, 0, 0, 35)
-    local TopCorner = Instance.new("UICorner")
-    TopCorner.CornerRadius = UDim.new(0, 12)
-    TopCorner.Parent = TopBar
-
-    Title.Parent = TopBar
-    Title.BackgroundTransparency = 1
-    Title.Position = UDim2.new(0.05, 0, 0, 0)
-    Title.Size = UDim2.new(0.6, 0, 1, 0)
-    Title.Font = Enum.Font.SourceSansBold
-    Title.Text = "Panda Hub 🐼"
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextSize = 16
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-
-    CloseBtn.Parent = TopBar
-    CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-    CloseBtn.Position = UDim2.new(0.82, 0, 0.15, 0)
-    CloseBtn.Size = UDim2.new(0, 25, 0, 25)
-    CloseBtn.Font = Enum.Font.SourceSansBold
-    CloseBtn.Text = "X"
-    CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CloseBtn.TextSize = 14
-    local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(0, 6)
-    CloseCorner.Parent = CloseBtn
-
-    CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
-
-    MinimizeBtn.Parent = TopBar
-    MinimizeBtn.BackgroundColor3 = Color3.fromRGB(200, 100, 50)
-    MinimizeBtn.Position = UDim2.new(0.64, 0, 0.15, 0)
-    MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
-    MinimizeBtn.Font = Enum.Font.SourceSansBold
-    MinimizeBtn.Text = "-"
-    MinimizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MinimizeBtn.TextSize = 14
-    local MinCorner = Instance.new("UICorner")
-    MinCorner.CornerRadius = UDim.new(0, 6)
-    MinCorner.Parent = MinimizeBtn
-
-    local minimized = false
-    MinimizeBtn.MouseButton1Click:Connect(function()
-        minimized = not minimized
-        for _, child in ipairs(MainFrame:GetChildren()) do
-            if child ~= TopBar and child ~= UICorner then
-                child.Visible = not minimized
-            end
-        end
-        MainFrame.Size = minimized and UDim2.new(0, 220, 0, 35) or UDim2.new(0, 220, 0, 200)
-    end)
-
-    -- زر تكبير السكن
-    TextButton.Parent = MainFrame
-    TextButton.BackgroundColor3 = Color3.fromRGB(210, 40, 40)
-    TextButton.Position = UDim2.new(0.1, 0, 0.25, 0)
-    TextButton.Size = UDim2.new(0.8, 0, 0, 32)
-    TextButton.Font = Enum.Font.SourceSansBold
-    TextButton.Text = "تكبير السكن (طول وعرض)"
-    TextButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TextButton.TextSize = 13
-
-    UICornerBtn.CornerRadius = UDim.new(0, 8)
-    UICornerBtn.Parent = TextButton
-
-    -- زر إرجاع الجسم طبيعي (الطريقة الآمنة المضمونة عبر تصفير الهيلث أو الموت البرمجي)
-    ResetBtn.Parent = MainFrame
-    ResetBtn.BackgroundColor3 = Color3.fromRGB(190, 80, 20)
-    ResetBtn.Position = UDim2.new(0.1, 0, 0.48, 0)
-    ResetBtn.Size = UDim2.new(0.8, 0, 0, 32)
-    ResetBtn.Font = Enum.Font.SourceSansBold
-    ResetBtn.Text = "إرجاع الجسم طبيعي"
-    ResetBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ResetBtn.TextSize = 13
-
-    UICornerReset.CornerRadius = UDim.new(0, 8)
-    UICornerReset.Parent = ResetBtn
-
-    -- زر ديسكورد السيرفر
-    DiscordBtn.Parent = MainFrame
-    DiscordBtn.BackgroundColor3 = Color3.fromRGB(120, 20, 120)
-    DiscordBtn.Position = UDim2.new(0.1, 0, 0.71, 0)
-    DiscordBtn.Size = UDim2.new(0.8, 0, 0, 32)
-    DiscordBtn.Font = Enum.Font.SourceSansBold
-    DiscordBtn.Text = "رابط ديسكورد السيرفر"
-    DiscordBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    DiscordBtn.TextSize = 13
-
-    UICornerDiscord.CornerRadius = UDim.new(0, 8)
-    UICornerDiscord.Parent = DiscordBtn
-
-    DiscordBtn.MouseButton1Click:Connect(function()
-        pcall(function() setclipboard(DiscordLink) end)
-        DiscordBtn.Text = "تم النسخ!"
-        task.wait(1.5)
-        DiscordBtn.Text = "رابط ديسكورد السيرفر"
-    end)
-
-    -- دالة التكبير
-    TextButton.MouseButton1Click:Connect(function()
-        local char = LP.Character
-        if char then
-            pcall(function()
-                for _, part in ipairs(char:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.Size = part.Size * 1.5
-                    end
-                end
-            end)
-        end
-    end)
-
-    -- دالة إرجاع الجسم طبيعي (تقوم بعمل إعادة إنتاج حقيقي للشخصية بإلغاء التكبير)
-    ResetBtn.MouseButton1Click:Connect(function()
-        pcall(function()
-            local char = LP.Character
-            if char then
-                local humanoid = char:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.Health = 0 -- تجبر اللعبة على إعادة إحياء اللاعب بالشكل الطبيعي 100%
-                end
-            end
-        end)
-    end)
-end
-
--- 3. الاستشعار التلقائي للديسكورد
-local hasJoined = false
-
-JoinBtn.MouseButton1Click:Connect(function()
+-- دالة نسخ الرابط
+DiscordBtn.MouseButton1Click:Connect(function()
     pcall(function() setclipboard(DiscordLink) end)
-    JoinBtn.Text = "تم نسخ الرابط! انضم وارجع للعبة..."
+    DiscordBtn.Text = "تم النسخ! ننتظرك بالسيرفر"
+    task.wait(2)
+    DiscordBtn.Text = "نسخ رابط الديسكورد"
 end)
 
-task.spawn(function()
-    while not hasJoined do
-        task.wait(1.5)
-        if JoinBtn.Text:find("تم نسخ") then
-            LockStatus.Text = "تم التحقق بنجاح! جاري فتح Panda Hub..."
-            LockStatus.TextColor3 = Color3.fromRGB(100, 255, 100)
-            task.wait(1)
-            hasJoined = true
-            LoadMainScript()
-            break
-        end
-    end
-end)
