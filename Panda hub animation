@@ -1,127 +1,105 @@
--- Panda Hub - All Roblox Animations Master Hub
+-- Panda Hub - Universal Animation GUI (Working Bypass)
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local LP = Players.LocalPlayer
 
-if CoreGui:FindFirstChild("PandaAllAnimations") then CoreGui.PandaAllAnimations:Destroy() end
+if CoreGui:FindFirstChild("PandaUniversalAnims") then CoreGui.PandaUniversalAnims:Destroy() end
 
 local ScreenGui = Instance.new("ScreenGui", CoreGui)
-ScreenGui.Name = "PandaAllAnimations"
+ScreenGui.Name = "PandaUniversalAnims"
 
 local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 250, 0, 350)
+MainFrame.Size = UDim2.new(0, 240, 0, 300)
 MainFrame.Position = UDim2.new(0.3, 0, 0.2, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
 local UICorner = Instance.new("UICorner", MainFrame)
-UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.CornerRadius = UDim.new(0, 10)
 
 local UIStroke = Instance.new("UIStroke", MainFrame)
+UIStroke.Color = Color3.fromRGB(255, 0, 0)
 UIStroke.Thickness = 2
-UIStroke.Color = Color3.fromRGB(220, 30, 30)
 
--- شريط العنوان
 local TopBar = Instance.new("Frame", MainFrame)
-TopBar.Size = UDim2.new(1, 0, 0, 35)
-TopBar.BackgroundColor3 = Color3.fromRGB(150, 15, 15)
-local TopCorner = Instance.new("UICorner", TopBar)
-TopCorner.CornerRadius = UDim.new(0, 12)
+TopBar.Size = UDim2.new(1, 0, 0, 30)
+TopBar.BackgroundColor3 = Color3.fromRGB(180, 20, 20)
+TopBar.Parent = MainFrame
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0, 10)
 
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(0.6, 0, 1, 0)
-Title.Position = UDim2.new(0.05, 0, 0, 0)
+Title.Size = UDim2.new(1, 0, 1, 0)
 Title.BackgroundTransparency = 1
-Title.Text = "Panda Hub - كل المشيات 🐼"
+Title.Text = "Panda Hub - المشيات السريعة 🐼"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.Font = Enum.Font.SourceSansBold
-Title.TextSize = 15
-Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextSize = 14
 
 local CloseBtn = Instance.new("TextButton", TopBar)
 CloseBtn.Size = UDim2.new(0, 25, 0, 25)
-CloseBtn.Position = UDim2.new(0.82, 0, 0.15, 0)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+CloseBtn.Position = UDim2.new(0.88, 0, 0.1, 0)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.SourceSansBold
-CloseBtn.TextSize = 13
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
 
--- قائمة التمرير (ScrollingFrame)
 local Scroll = Instance.new("ScrollingFrame", MainFrame)
 Scroll.Size = UDim2.new(0.9, 0, 0.78, 0)
 Scroll.Position = UDim2.new(0.05, 0, 0.18, 0)
 Scroll.BackgroundTransparency = 1
-Scroll.CanvasSize = UDim2.new(0, 0, 0, 1100) -- مساحة واسعة لكل المشيات
-Scroll.ScrollBarThickness = 5
+Scroll.CanvasSize = UDim2.new(0, 0, 0, 400)
+Scroll.ScrollBarThickness = 4
+Scroll.Parent = MainFrame
 
 local UIList = Instance.new("UIListLayout", Scroll)
+UIList.Padding = UDim.new(0, 6)
 UIList.SortOrder = Enum.SortOrder.LayoutOrder
-UIList.Padding = UDim.new(0, 8)
 
--- دالة التغيير الشاملة
-local function applyAnimationPack(ids)
-    local char = LP.Character
-    if not char then return end
-    local animate = char:FindFirstChild("Animate")
-    if animate then
-        animate.Disabled = true
-        for _, anim in pairs(animate:GetChildren()) do
-            if anim:IsA("StringValue") then
-                for name, id in pairs(ids) do
-                    if anim.Name == name then
-                        for _, child in pairs(anim:GetChildren()) do
-                            if child:IsA("Animation") then
-                                child.AnimationId = "rbxassetid://" .. tostring(id)
-                            end
-                        end
-                    end
-                end
-            end
+-- دالة تشغيل المشية عبر الـ Emote/Animation Track المباشر لتتخطى حماية الماب
+local function playAnim(id)
+    pcall(function()
+        local char = LP.Character
+        if not char then return end
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        if not humanoid then return end
+        
+        -- إيقاف أي مشية قديمة
+        for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+            track:Stop()
         end
-        animate.Disabled = false
-    end
+        
+        local anim = Instance.new("Animation")
+        anim.AnimationId = "rbxassetid://" .. tostring(id)
+        local track = humanoid:LoadAnimation(anim)
+        track.Looped = true
+        track:Play()
+    end)
 end
 
--- جدول شامل يضم جميع حزم المشيات في تاريخ روبلوكس
-local allAnims = {
-    {Name = "1. مشية النينجا (Ninja)", IDs = {walk = 656121766, run = 656118852, idle = 656117412, jump = 656115606}},
-    {Name = "2. مشية الزومبي (Zombie)", IDs = {walk = 616158032, run = 616163682, idle = 616158476, jump = 616159682}},
-    {Name = "3. مشية الكرتون (Cartoon)", IDs = {walk = 742637544, run = 742638842, idle = 742633417, jump = 742633093}},
-    {Name = "4. مشية الساحرة (Mage)", IDs = {walk = 707833801, run = 707833455, idle = 707829716, jump = 707826377}},
-    {Name = "5. مشية الروك (Vampire)", IDs = {walk = 1083216118, run = 1083218792, idle = 1083195503, jump = 1083213500}},
-    {Name = "6. مشية الببلي (Bubbly)", IDs = {walk = 910006370, run = 910008775, idle = 910004837, jump = 910003252}},
-    {Name = "7. مشية ريترو (Retro)", IDs = {walk = 33796059, run = 33796059, idle = 33796033, jump = 33796046}},
-    {Name = "8. مشية الإصرار (Confident)", IDs = {walk = 1039563891, run = 1039565018, idle = 1039556096, jump = 1039562880}},
-    {Name = "9. مشية السعيد (Joyful)", IDs = {walk = 1047901289, run = 1047902488, idle = 1047898279, jump = 1047900423}},
-    {Name = "10. مشية المشاغب (Old School)", IDs = {walk = 531983973, run = 531984506, idle = 531982881, jump = 531983563}},
-    {Name = "11. مشية الخيال (Astronaut)", IDs = {walk = 891633566, run = 891634789, idle = 891624640, jump = 891632788}},
-    {Name = "12. مشية البيراتها (Pirate)", IDs = {walk = 750781830, run = 750783347, idle = 750778841, jump = 750780305}},
-    {Name = "13. مشية القفزات (Levitation)", IDs = {walk = 1026118105, run = 1026119306, idle = 1026115830, jump = 1026117215}},
-    {Name = "14. مشية الغاضب (Werewolf)", IDs = {walk = 1094157449, run = 1094160490, idle = 1094153033, jump = 1094155996}},
-    {Name = "15. مشية الروبوت (Robot)", IDs = {walk = 616161817, run = 616163682, idle = 616158476, jump = 616159682}},
-    {Name = "16. مشية الأميرة (Princess)", IDs = {walk = 945634568, run = 945636372, idle = 945631745, jump = 945633767}},
-    {Name = "17. مشية الأبطال (Super Hero)", IDs = {walk = 616146197, run = 616147814, idle = 616135372, jump = 616138682}},
-    {Name = "18. مشية البسالة (Knight)", IDs = {walk = 657595757, run = 657597171, idle = 657593685, jump = 657594960}},
-    {Name = "19. مشية العضلات (Rthro Bold)", IDs = {walk = 981577755, run = 981578496, idle = 981572911, jump = 981575808}},
-    {Name = "20. إرجاع المشية العادية (Reset)", IDs = {walk = 507777773, run = 507777773, idle = 507766388, jump = 507765000}}
+local animsList = {
+    {Name = "مشية النينجا", ID = 656121766},
+    {Name = "مشية الزومبي", ID = 616158032},
+    {Name = "مشية الكرتون", ID = 742637544},
+    {Name = "مشية الساحرة", ID = 707833801},
+    {Name = "مشية الروك", ID = 1083216118},
+    {Name = "مشية الببلي", ID = 910006370},
+    {Name = "إيقاف المشية", ID = 507777773}
 }
 
--- تعبئة الأزرار تلقائياً
-For _, data in ipairs(allAnims) do
-    Local Btn = Instance.new("TextButton", Scroll)
-    Btn.Size = UDim2.new(1, -5, 0, 42)
-    Btn.BackgroundColor3 = Color3.fromRGB(190, 40, 40)
+for _, data in ipairs(animsList) do
+    local Btn = Instance.new("TextButton")
+    Btn.Size = UDim2.new(1, -5, 0, 38)
+    Btn.BackgroundColor3 = Color3.fromRGB(150, 30, 30)
     Btn.Text = data.Name
     Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     Btn.Font = Enum.Font.SourceSansBold
-    Btn.TextSize = 13
-    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
-
+    Btn.TextSize = 14
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6)
+    Btn.Parent = Scroll
+    
     Btn.MouseButton1Click:Connect(function()
-        ApplyAnimationPack(data.IDs)
+        playAnim(data.ID)
     end)
 end
